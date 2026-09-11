@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weapon Factory — Value List</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #121018;
+    --bg-deep: #0c0b12;
+    --panel: #1a1723;
+    --panel-2: #201c2c;
+    --line: #2c2740;
+    --line-soft: #241f30;
+    --text: #f1ecff;
+    --muted: #948dab;
+    --muted-2: #6f6884;
+    --gold: #f0b429;
+    --gold-dim: #6b551f;
+    --gem: #3fd6c6;
+    --gem-dim: #1e5651;
+    --danger: #e5637a;
+
+    --c-weapons: #e0566b;
+    --c-items: #3fd6c6;
+    --c-cards: #b28bf7;
+    --c-artifacts: #f0b429;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 90% -10%, #241a3455, transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, #1a2b2f55, transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+  ::selection{background:var(--gem-dim);}
+  .num{font-family:'JetBrains Mono',monospace;}
+
+  .app{display:flex; flex-direction:column; min-height:100vh;}
+
+  .topbar{
+    display:flex; align-items:center; gap:14px;
+    padding:16px 24px;
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#171320,#13111a);
+    position:sticky; top:0; z-index:30;
+    flex-wrap:wrap;
+  }
+  .brand{display:flex; align-items:center; gap:10px; margin-right:auto;}
+  .brand-mark{
+    width:34px;height:34px;border-radius:9px;
+    background:linear-gradient(135deg,var(--gold),#c98a1c);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Baloo 2';font-weight:800;color:#1a1300;font-size:17px;
+    box-shadow:0 4px 14px -4px #f0b42966;
+  }
+  .brand-text h1{font-family:'Baloo 2'; font-weight:700; font-size:18px; margin:0; line-height:1.1;}
+  .brand-text span{font-size:11.5px; color:var(--muted); letter-spacing:.02em;}
+
+  .rate-box{
+    display:flex; align-items:center; gap:10px;
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:12px; padding:8px 8px 8px 14px;
+  }
+  .rate-box label{font-size:12px; color:var(--muted); white-space:nowrap;}
+  .rate-box .eq{color:var(--muted-2); font-size:13px;}
+  .rate-box input{
+    width:110px; background:var(--bg-deep); border:1px solid var(--line);
+    border-radius:8px; color:var(--gem); font-family:'JetBrains Mono'; font-weight:700;
+    padding:7px 9px; font-size:13.5px; outline:none;
+  }
+  .rate-box input:focus{border-color:var(--gem);}
+  .rate-box input:disabled{opacity:.5; cursor:not-allowed;}
+  .rate-chip{font-size:11px; color:var(--gem); background:var(--gem-dim); opacity:.55; padding:5px 8px; border-radius:7px; font-family:'JetBrains Mono';}
+
+  .btn{
+    border:1px solid var(--line); background:var(--panel-2); color:var(--text);
+    padding:9px 15px; border-radius:10px; font-weight:600; font-size:13.5px;
+    cursor:pointer; display:inline-flex; align-items:center; gap:7px;
+    transition:border-color .15s, transform .1s; font-family:'Inter'; white-space:nowrap;
+  }
+  .btn:hover{border-color:#463d63;}
+  .btn:active{transform:translateY(1px);}
+  .btn-gold{background:linear-gradient(180deg,#f5c451,var(--gold)); color:#221800; border:none; font-weight:700;}
+  .btn-gold:hover{filter:brightness(1.06);}
+  .btn-ghost{background:transparent;}
+  .btn-danger{color:var(--danger); border-color:#4a2530;}
+  .btn-unlocked{background:linear-gradient(180deg,#4fe0c8,var(--gem)); color:#062622; border:none; font-weight:700;}
+
+  .body-grid{display:flex; flex:1; min-height:0;}
+  .sidebar{width:232px; flex-shrink:0; border-right:1px solid var(--line); padding:18px 12px; background:var(--bg-deep);}
+  .cat-group{margin-bottom:6px;}
+  .cat-btn{
+    width:100%; text-align:left; background:none; border:none; color:var(--text);
+    padding:11px 12px; border-radius:10px; font-family:'Baloo 2'; font-weight:600;
+    font-size:15px; cursor:pointer; display:flex; align-items:center; gap:10px; letter-spacing:.01em;
+  }
+  .cat-btn .dot{width:8px;height:8px;border-radius:50%; flex-shrink:0;}
+  .cat-btn:hover{background:var(--panel);}
+  .cat-btn.active{background:var(--panel-2);}
+  .subcat-list{padding:2px 0 10px 30px; display:none;}
+  .cat-group.open .subcat-list{display:block;}
+  .subcat-btn{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    width:100%; text-align:left; background:none; border:none; color:var(--muted);
+    padding:7px 10px; border-radius:8px; font-size:13px; cursor:pointer; margin:1px 0;
+  }
+  .subcat-btn:hover{color:var(--text); background:var(--panel);}
+  .subcat-btn.active{color:var(--text); background:var(--panel-2); font-weight:600;}
+  .subcat-btn .count{font-family:'JetBrains Mono'; font-size:10.5px; color:var(--muted-2);}
+
+  .main{flex:1; min-width:0; padding:22px 26px 60px; overflow-y:auto;}
+  .main-head{display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:18px; flex-wrap:wrap;}
+  .crumb{font-size:12px; color:var(--muted-2); margin-bottom:4px;}
+  .main-head h2{font-family:'Baloo 2'; font-size:26px; margin:0; font-weight:700;}
+  .head-actions{display:flex; gap:10px; align-items:center;}
+  .search{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:9px 13px; color:var(--text); font-size:13.5px; width:210px; outline:none;}
+  .search:focus{border-color:#463d63;}
+
+  .empty-state{border:1.5px dashed var(--line); border-radius:16px; padding:46px 20px; text-align:center; color:var(--muted); margin-top:10px;}
+  .empty-state b{color:var(--text); display:block; font-family:'Baloo 2'; font-size:16px; margin-bottom:6px;}
+
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px; align-items:start;}
+
+  .card{
+    position:relative; background:var(--panel); border:1.5px solid var(--line);
+    border-radius:14px; padding:14px; cursor:pointer; transition:border-color .15s;
+  }
+  .card:hover{border-color:var(--accent,#463d63);}
+  .card-top{display:flex; align-items:flex-start; justify-content:space-between; gap:6px;}
+  .card-name{font-family:'Baloo 2'; font-weight:600; font-size:14.5px; line-height:1.25; margin:2px 0 10px;}
+  .pencil{
+    background:var(--bg-deep); border:1px solid var(--line); color:var(--muted);
+    width:24px; height:24px; border-radius:7px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+    font-size:12px; cursor:pointer;
+  }
+  .pencil:hover{color:var(--text); border-color:#463d63;}
+  .card-values{display:flex; flex-direction:column; gap:4px;}
+  .val-row{display:flex; align-items:center; justify-content:space-between; font-size:12px;}
+  .val-row .lbl{color:var(--muted);}
+  .val-row .amt{font-family:'JetBrains Mono'; font-weight:700; font-size:12.5px;}
+  .amt-gem{color:var(--gem);}
+  .amt-gold{color:var(--gold);}
+
+  .expand-toggle{display:flex; align-items:center; justify-content:center; gap:5px; margin-top:10px; font-size:11px; color:var(--muted-2); border-top:1px dashed var(--line-soft); padding-top:8px;}
+  .card.expanded .expand-toggle .chev{transform:rotate(180deg);}
+  .chev{transition:transform .15s; font-size:9px;}
+
+  .card-expand{max-height:0; overflow:hidden; transition:max-height .2s ease;}
+  .card.expanded .card-expand{max-height:480px;}
+  .expand-inner{padding-top:12px;}
+  .stat-line-row{display:flex; justify-content:space-between; font-size:12px; padding:3px 0; color:var(--muted);}
+  .stat-line-row b{color:var(--text); font-family:'JetBrains Mono'; font-weight:600;}
+  .expand-inner hr{border:none; border-top:1px solid var(--line-soft); margin:8px 0;}
+  .expand-inner .none{font-size:11.5px; color:var(--muted-2); font-style:italic;}
+  .expand-inner .total{display:flex; justify-content:space-between; font-size:12.5px; font-weight:700;}
+  .expand-inner .total b{color:var(--gem); font-family:'JetBrains Mono';}
+  .shiny-tag{font-size:10.5px; font-weight:700; color:var(--gold); margin:8px 0 2px;}
+
+  .overlay{position:fixed; inset:0; background:#08070ccc; backdrop-filter:blur(3px); display:none; align-items:center; justify-content:center; z-index:200; padding:20px;}
+  .overlay.show{display:flex;}
+  .modal{width:100%; max-width:460px; max-height:88vh; overflow-y:auto; background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:22px;}
+  .modal h3{font-family:'Baloo 2'; margin:0 0 16px; font-size:19px;}
+  .field{margin-bottom:13px;}
+  .field label{display:block; font-size:12px; color:var(--muted); margin-bottom:5px; font-weight:600;}
+  .field input, .field select{width:100%; background:var(--bg-deep); border:1px solid var(--line); border-radius:9px; padding:9px 11px; color:var(--text); font-size:13.5px; outline:none; font-family:'Inter';}
+  .field input:focus, .field select:focus{border-color:#463d63;}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .shiny-block{background:var(--bg-deep); border:1px solid var(--line-soft); border-radius:11px; padding:11px; margin-top:2px;}
+  .shiny-block label{color:var(--gold);}
+
+  .stat-editor .stat-line{display:grid; grid-template-columns:1fr 90px 30px; gap:7px; margin-bottom:7px;}
+  .icon-btn{background:var(--bg-deep); border:1px solid var(--line); border-radius:8px; color:var(--muted); cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center;}
+  .icon-btn:hover{color:var(--danger); border-color:#4a2530;}
+  .add-stat{width:100%; margin-top:2px; background:none; border:1px dashed var(--line); color:var(--muted); border-radius:9px; padding:8px; font-size:12.5px; cursor:pointer;}
+  .add-stat:hover{color:var(--text); border-color:#463d63;}
+  .add-stat:disabled{opacity:.4; cursor:not-allowed;}
+  .stat-hint{font-size:11px; color:var(--muted-2); margin-top:-6px; margin-bottom:8px;}
+
+  .modal-actions{display:flex; gap:10px; margin-top:18px;}
+  .modal-actions .btn{flex:1; justify-content:center;}
+
+  @media(max-width:760px){
+    .sidebar{position:fixed; left:0; top:70px; bottom:0; z-index:40; transform:translateX(-100%); transition:.2s; box-shadow:20px 0 40px #0008;}
+    .sidebar.open{transform:translateX(0);}
+    .main{padding:16px;}
+    .search{width:140px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <button class="icon-btn" id="menuBtn" style="display:none; width:36px;height:36px;font-size:18px;">☰</button>
+      <div class="brand-mark">WF</div>
+      <div class="brand-text">
+        <h1>Weapon Factory</h1>
+        <span>Community Value List</span>
+      </div>
+    </div>
+    <div class="rate-box">
+      <label>1 Token =</label>
+      <input id="tokenRateInput" class="num" type="text" value="25B" disabled>
+      <span class="eq">gems</span>
+      <span class="rate-chip" id="rateEcho">= 25,000,000,000</span>
+    </div>
+    <button class="btn btn-ghost" id="editorBtn">🔒 Editor Mode</button>
+    <button class="btn btn-gold" id="addItemBtn" style="display:none;">+ Add Item</button>
+  </div>
+
+  <div class="body-grid">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="main">
+      <div class="main-head">
+        <div>
+          <div class="crumb" id="crumb">Category / Subcategory</div>
+          <h2 id="sectionTitle">All Items</h2>
+        </div>
+        <div class="head-actions">
+          <input class="search" id="searchInput" placeholder="Search items…">
+        </div>
+      </div>
+      <div id="gridWrap"></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3 id="modalTitle">Add Item</h3>
+    <form id="itemForm">
+      <div class="field">
+        <label>Item name</label>
+        <input id="f_name" required placeholder="e.g. Frostbite Blade">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Category</label>
+          <select id="f_cat"></select>
+        </div>
+        <div class="field">
+          <label>Subcategory</label>
+          <select id="f_subcat"></select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Value — Tokens</label>
+        <input id="f_tokens" class="num" type="text" value="0" placeholder="0">
+      </div>
+
+      <div class="field shiny-block" id="shinyBlock" style="display:none;">
+        <label>✦ Shiny — Tokens <span style="color:var(--muted); font-weight:400;">(every weapon has a shiny)</span></label>
+        <input id="f_shinyTokens" class="num" type="text" value="0">
+      </div>
+
+      <div class="field stat-editor" style="margin-top:14px;">
+        <label>Stats (shown when the card is expanded)</label>
+        <div class="stat-hint" id="statHint"></div>
+        <div id="statLines"></div>
+        <button type="button" class="add-stat" id="addStatBtn">+ Add stat</button>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-danger" id="deleteBtn" style="display:none;">Delete</button>
+        <button type="button" class="btn btn-ghost" id="cancelBtn">Cancel</button>
+        <button type="submit" class="btn btn-gold">Save item</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+/* ============================= DATA MODEL ============================= */
+const CATEGORIES = {
+  weapons: {
+    label:"Weapons", accent:"var(--c-weapons)",
+    subcats:{
+      secret:{label:"Secret"},
+      exclusives:{label:"Exclusives"},
+      zombie:{label:"Zombie"},
+      limited:{label:"Limited"},
+    }
+  },
+  items: {
+    label:"Items", accent:"var(--c-items)",
+    subcats:{
+      healing:{label:"Healing"},
+      boosts:{label:"Boosts"},
+      candies:{label:"Candies"},
+      crafting_items:{label:"Crafting Items"},
+      consumables:{label:"Consumables"},
+      enchant_stones:{label:"Enchant Stones"},
+      item_packs:{label:"Item Packs"},
+    }
+  },
+  cards: {
+    label:"Cards", accent:"var(--c-cards)",
+    subcats:{}
+  },
+  artifacts: {
+    label:"Artifacts", accent:"var(--c-artifacts)",
+    subcats:{
+      tier1:{label:"Tier I"}, tier2:{label:"Tier II"}, tier3:{label:"Tier III"},
+      tier4:{label:"Tier IV"}, tier5:{label:"Tier V"}, tier6:{label:"Tier VI"},
+      tier7:{label:"Tier VII"}, tier8:{label:"Tier VIII"}, tier9:{label:"Tier IX"},
+      tier10:{label:"Tier X"},
+    }
+  }
+};
+
+const CARD_PACK_NAMES = ["Red Pack","Geode Pack","Monster Pack","Jungle Pack","Cherry Blossom Pack","Dark Forest Pack","Garden Pack","Plush Pack","Cyber Pack","Snowy Pack","Mushroom Pack","Fossil Pack","Volcanic Pack","Cloud Pack","Chocolate Pack","Ocean Pack","Sweet Treats Pack","Nightmare Pack","Cupcake Pack","Flower Pack","Dark Frost Pack"];
+const CARD_PACK_SWATCHES = ["#d63447","#8b5fbf","#1f3d3a","#3f9142","#f2a7c3","#16241c","#8a5a2b","#e8c9a0","#1f9aa0","#a9b7c0","#6b3fa0","#c9a66b","#c0392b","#bcdff2","#5c3a21","#3f8fd6","#f2a7c3","#3b1f5c","#f4b6c2","#7cb342","#1f4e4a"];
+CARD_PACK_NAMES.forEach((name,i)=>{
+  CATEGORIES.cards.subcats['pack'+(i+1)] = {label:`#${i+1} ${name}`, swatch:CARD_PACK_SWATCHES[i]};
+});
+CATEGORIES.cards.subcats['admin'] = {label:"Admin Pack", swatch:"#8a5a2b"};
+["Galaxy","Pearl Shore","Stardust","Champion","Void"].forEach((n,i)=>{
+  CATEGORIES.cards.subcats['exclusive'+(i+1)] = {label:`Exclusive · ${n}`, swatch:["#4b2e83","#d8c39a","#dfe7ec","#f0b429","#0c1445"][i]};
+});
+
+/* ---- weapon seed data ---- */
+function ws(value,xp,dmg,hp,atk,luck){
+  const s=[];
+  if(value!=null)s.push({label:'Value',value:value+'x'});
+  if(xp!=null)s.push({label:'XP',value:xp+'x'});
+  if(dmg!=null)s.push({label:'DMG',value:dmg+'x'});
+  if(hp!=null)s.push({label:'HP',value:hp+'x'});
+  if(atk!=null)s.push({label:'Atk Spd',value:atk+''});
+  if(luck!=null)s.push({label:'Luck',value:luck+'x'});
+  return s;
+}
+const WEAPON_SEED = [
+  {name:'Ancient Battle Axe', subcat:'secret', stats: ws(110,110,150,140,'3s',15)},
+  {name:'Hexed Dagger', subcat:'secret', stats: ws(130,130,70,70,'1s',17)},
+  {name:'Black Hole Blade', subcat:'secret', stats: ws(180,180,130,130,'1.5s',20)},
+  {name:'Blue Abyss Katana', subcat:'secret', stats: ws(220,220,190,190,'1.2s',25)},
+  {name:'Dragon Eye Knife', subcat:'secret', stats: ws(280,280,200,200,'0.9s',30)},
+  {name:'Soul Whip', subcat:'secret', stats: []},
+  {name:'Nightmare Scythe', subcat:'secret', stats: []},
+  {name:"King's Blade", subcat:'secret', stats: []},
+
+  {name:'Gem Blade', subcat:'exclusives', stats: ws(60,60,40,40,'2s',12)},
+  {name:'Linked Sword', subcat:'exclusives', stats: ws(35,35,25,25,'2.5s',3)},
+  {name:'Token Blade', subcat:'exclusives', stats: ws(120,120,80,80,'1.5s',20)},
+  {name:'Venomshank', subcat:'exclusives', stats: []},
+  {name:'Balloon Sword', subcat:'exclusives', stats: []},
+  {name:'Ice Dagger', subcat:'exclusives', stats: []},
+  {name:'Summer Scythe', subcat:'exclusives', stats: []},
+  {name:'Fireband', subcat:'exclusives', stats: []},
+  {name:'Lightning Blade', subcat:'exclusives', stats: ws(50,50,40,35,'1.8s',7)},
+  {name:'Darkheart', subcat:'exclusives', stats: []},
+  {name:'Shattered Katana', subcat:'exclusives', stats: ws(90,80,85,70,'1.7s',14)},
+  {name:'Bling Dagger', subcat:'exclusives', stats: ws(35,35,25,25,'1.5s',3)},
+  {name:"Owner's Sword", subcat:'exclusives', stats: ws(100,100,80,80,'1.2s',10)},
+  {name:'Bling Sword', subcat:'exclusives', stats: []},
+  {name:'Bling Katana', subcat:'exclusives', stats: []},
+  {name:'Bling Scythe', subcat:'exclusives', stats: []},
+  {name:'Royal Great Sword', subcat:'exclusives', stats: []},
+  {name:'Vanilla Ice Cream Sword', subcat:'exclusives', stats: ws(35,35,25,25,'1.6s',4)},
+  {name:'Chocolate Ice Cream Sword', subcat:'exclusives', stats: []},
+  {name:'Strawberry Ice Cream Sword', subcat:'exclusives', stats: []},
+  {name:'Mint Ice Cream Sword', subcat:'exclusives', stats: []},
+  {name:'Cookie Ice Cream Sword', subcat:'exclusives', stats: []},
+
+  {name:'Zombie Sword', subcat:'zombie', stats: []},
+  {name:'Grave Shovel', subcat:'zombie', stats: []},
+  {name:'Grave Staff', subcat:'zombie', stats: []},
+  {name:'Zombified Forest Staff', subcat:'zombie', stats: []},
+
+  {name:'Release Sword', subcat:'limited', stats: []},
+  {name:'Driftwood Sword', subcat:'limited', stats: []},
+  {name:'Coconut Sword', subcat:'limited', stats: []},
+  {name:'Harpoon', subcat:'limited', stats: []},
+  {name:'Leviathan Harpoon', subcat:'limited', stats: []},
+].map((w,i)=>({
+  id:'wpn_'+i, name:w.name, category:'weapons', subcat:w.subcat,
+  tokens:0, shinyTokens:0, stats:w.stats
+}));
+
+/* ---- artifact seed data ---- */
+const ROMAN = ['I','II','III','IV','V','VI','VII','VIII','IX','X'];
+const ARTIFACT_DEFS = [
+  {name:'Money', values:[5,15,25,35,45,55,75,85,95,150]},
+  {name:'Bandage', values:[5,10,15,20,25,35,50,75,100,150]},
+  {name:'Diamond', values:[5,10,15,20,25,35,50,75,100,150]},
+  {name:'Exp Shard', values:[5,10,15,20,25,35,50,75,100,150]},
+  {name:'Money Bag', values:[5,10,15,20,25,35,50,75,100,150]},
+  {name:'Rotten Flesh', values:[5,10,15,20,25,35,50,75,100,150]},
+  {name:'Soul Crystal', values:[5,10,15,20,25,35,50,75,100,150]},
+  {name:'Lucky Clover', values:[5,10,15,20,25,35,50,75,100,150]},
+  {name:'Enchant Crystal', values:[5,10,20,30,40,70,75,125,150]}, // only 9 values were given — Tier X left blank, fill in when you have it
+  {name:'Loot Orb', values:[5,10,15,20,25,35,50,75,100,150]},
+  {name:'Blue Clover', values:[5,10,15,20,25,30,40,50,70,100]},
+];
+const ARTIFACT_SEED = [];
+ARTIFACT_DEFS.forEach(def=>{
+  for(let t=0;t<10;t++){
+    const val = def.values[t];
+    ARTIFACT_SEED.push({
+      id:'art_'+def.name.replace(/\s/g,'')+'_'+t,
+      name:`${def.name} ${ROMAN[t]}`,
+      category:'artifacts', subcat:'tier'+(t+1),
+      tokens:0, shinyTokens:0,
+      stats: val!=null ? [{label:'Effect', value: val+'%'}] : [{label:'Effect', value:'N/A'}]
+    });
+  }
+});
+
+let state = {
+  tokenRate: 25_000_000_000,
+  items: [...WEAPON_SEED, ...ARTIFACT_SEED],
+};
+let currentCat = "weapons";
+let currentSubcat = null;
+let openCat = "weapons";
+let editingId = null;
+let expandedIds = new Set();
+let unlocked = false;
+
+/* ============================= PERSISTENCE ============================= */
+const STORE_KEY = 'wf-valuelist-v2';
+const PASS_KEY = 'wf-passcode-v1';
+
+async function loadState(){
+  try{
+    const res = await window.storage.get(STORE_KEY, true);
+    if(res && res.value){
+      const parsed = JSON.parse(res.value);
+      if(parsed && Array.isArray(parsed.items)){
+        state.tokenRate = parsed.tokenRate || state.tokenRate;
+        state.items = parsed.items;
+      }
+    }
+  }catch(e){ /* nothing saved yet — using seeded defaults */ }
+  renderAll();
+}
+let saveTimer=null;
+function saveState(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async ()=>{
+    try{ await window.storage.set(STORE_KEY, JSON.stringify(state), true); }
+    catch(e){ console.error('Save failed', e); }
+  }, 250);
+}
+
+/* ============================= NUMBER HELPERS ============================= */
+const SUFFIXES = ['','K','M','B','T','Qa','Qi','Sx','Sp','Oc','No','Dc'];
+function fmtNum(n){
+  n = Number(n)||0;
+  const neg = n<0; n=Math.abs(n);
+  if(n<1000) return (neg?'-':'') + (Number.isInteger(n)? n : n.toFixed(2));
+  let tier = Math.floor(Math.log10(n)/3);
+  tier = Math.min(tier, SUFFIXES.length-1);
+  const scaled = n / Math.pow(10,tier*3);
+  const dec = scaled<10?2:(scaled<100?1:0);
+  return (neg?'-':'') + scaled.toFixed(dec) + SUFFIXES[tier];
+}
+function parseAbbrev(str){
+  if(typeof str === 'number') return str;
+  if(!str) return 0;
+  str = str.toString().trim().replace(/,/g,'');
+  const m = str.match(/^(-?[\d.]+)\s*([A-Za-z]*)$/);
+  if(!m) return parseFloat(str)||0;
+  const num = parseFloat(m[1]);
+  const suf = m[2].charAt(0).toUpperCase() + m[2].slice(1);
+  const idx = SUFFIXES.findIndex(s=>s.toLowerCase()===suf.toLowerCase());
+  if(!m[2]) return num;
+  if(idx>0) return num*Math.pow(10, idx*3);
+  return num;
+}
+function itemGemValue(item, shiny=false){
+  const tok = shiny? (item.shinyTokens||0) : (item.tokens||0);
+  return tok*state.tokenRate;
+}
+
+/* ============================= EDITOR MODE ============================= */
+async function getPasscode(){
+  try{ const r = await window.storage.get(PASS_KEY, true); return r? r.value : null; }
+  catch(e){ return null; }
+}
+async function setPasscode(p){ await window.storage.set(PASS_KEY, p, true); }
+
+document.getElementById('editorBtn').addEventListener('click', async ()=>{
+  if(unlocked){
+    unlocked = false;
+    updateEditorUI();
+    return;
+  }
+  const existing = await getPasscode();
+  if(!existing){
+    const p1 = prompt('No passcode is set yet. Create one — only share it with people who should be able to edit:');
+    if(!p1) return;
+    const p2 = prompt('Confirm passcode:');
+    if(p1 !== p2){ alert('Passcodes did not match — try again.'); return; }
+    await setPasscode(p1);
+    unlocked = true;
+    updateEditorUI();
+    alert('Passcode set. Anyone with this passcode can edit the list.');
+    return;
+  }
+  const attempt = prompt('Enter editor passcode:');
+  if(attempt === null) return;
+  if(attempt === existing){ unlocked = true; updateEditorUI(); }
+  else{ alert('Incorrect passcode.'); }
+});
+
+function updateEditorUI(){
+  const editorBtn = document.getElementById('editorBtn');
+  editorBtn.textContent = unlocked ? '🔓 Lock' : '🔒 Editor Mode';
+  editorBtn.className = 'btn ' + (unlocked ? 'btn-unlocked' : 'btn-ghost');
+  document.getElementById('addItemBtn').style.display = unlocked ? 'inline-flex' : 'none';
+  document.getElementById('tokenRateInput').disabled = !unlocked;
+  renderMain();
+}
+
+/* ============================= RENDER: SIDEBAR ============================= */
+function renderSidebar(){
+  const sb = document.getElementById('sidebar');
+  sb.innerHTML='';
+  Object.entries(CATEGORIES).forEach(([catKey,cat])=>{
+    const group = document.createElement('div');
+    group.className='cat-group' + (catKey===openCat?' open':'');
+    const btn = document.createElement('button');
+    btn.className='cat-btn' + (catKey===currentCat && !currentSubcat ? ' active':'');
+    btn.innerHTML = `<span class="dot" style="background:${cat.accent}"></span>${cat.label}`;
+    btn.onclick = ()=>{
+      if(openCat===catKey){ openCat=null; }
+      else{ openCat=catKey; currentCat=catKey; currentSubcat=null; renderMain(); }
+      renderSidebar();
+    };
+    group.appendChild(btn);
+
+    const list = document.createElement('div');
+    list.className='subcat-list';
+    Object.entries(cat.subcats).forEach(([subKey,sub])=>{
+      const count = state.items.filter(i=>i.category===catKey && i.subcat===subKey).length;
+      const sbtn = document.createElement('button');
+      sbtn.className='subcat-btn' + (catKey===currentCat && currentSubcat===subKey ? ' active':'');
+      sbtn.innerHTML = `<span>${sub.swatch? `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${sub.swatch};margin-right:6px;"></span>`:''}${sub.label}</span><span class="count">${count}</span>`;
+      sbtn.onclick=(e)=>{ e.stopPropagation(); currentCat=catKey; currentSubcat=subKey; openCat=catKey; renderSidebar(); renderMain(); };
+      list.appendChild(sbtn);
+    });
+    group.appendChild(list);
+    sb.appendChild(group);
+  });
+}
+
+/* ============================= RENDER: MAIN GRID ============================= */
+function renderMain(){
+  const cat = CATEGORIES[currentCat];
+  const sub = currentSubcat ? cat.subcats[currentSubcat] : null;
+  document.getElementById('crumb').textContent = cat.label + (sub? ' / ' + sub.label : '');
+  document.getElementById('sectionTitle').textContent = sub ? sub.label : cat.label;
+
+  const query = document.getElementById('searchInput').value.trim().toLowerCase();
+  let items = state.items.filter(i=>i.category===currentCat && (!currentSubcat || i.subcat===currentSubcat));
+  if(query) items = items.filter(i=>i.name.toLowerCase().includes(query));
+
+  const wrap = document.getElementById('gridWrap');
+  wrap.innerHTML='';
+  if(items.length===0){
+    wrap.innerHTML = `<div class="empty-state"><b>Nothing here yet</b>No items saved in this ${sub? 'subcategory':'category'} yet.${unlocked? ' Hit “+ Add Item” to start filling it in.' : ' Unlock Editor Mode to add some.'}</div>`;
+    return;
+  }
+  const grid = document.createElement('div');
+  grid.className='grid';
+  items.forEach(item=>{
+    const isWeapon = item.category==='weapons';
+    const total = itemGemValue(item,false);
+    const isExpanded = expandedIds.has(item.id);
+
+    let statsHtml = (item.stats||[]).map(s=>`<div class="stat-line-row"><span>${escapeHtml(s.label)}</span><b>${escapeHtml(s.value)}</b></div>`).join('');
+    if(!statsHtml) statsHtml = `<div class="none">No stats recorded yet</div>`;
+
+    let shinyHtml = '';
+    if(isWeapon){
+      const sTotal = itemGemValue(item,true);
+      shinyHtml = `<div class="shiny-tag">✦ Shiny</div>
+        <div class="stat-line-row"><span>Tokens</span><b>${fmtNum(item.shinyTokens||0)}</b></div>
+        <div class="total"><span>Value</span><b>${fmtNum(sTotal)} gems</b></div>`;
+    }
+
+    const card = document.createElement('div');
+    card.className='card' + (isExpanded? ' expanded':'');
+    card.style.setProperty('--accent', cat.accent);
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="card-name">${escapeHtml(item.name)}</div>
+        ${unlocked? `<button type="button" class="pencil" data-edit="${item.id}">✎</button>` : ''}
+      </div>
+      <div class="card-values">
+        <div class="val-row"><span class="lbl">Tokens</span><span class="amt amt-gold">${fmtNum(item.tokens||0)}</span></div>
+        <div class="val-row"><span class="lbl">Gems</span><span class="amt amt-gem">${fmtNum(total)}</span></div>
+      </div>
+      <div class="expand-toggle"><span>${isExpanded? 'Hide details':'View details'}</span><span class="chev">▾</span></div>
+      <div class="card-expand"><div class="expand-inner">
+        ${statsHtml}
+        <hr>
+        <div class="stat-line-row"><span>Tokens</span><b>${fmtNum(item.tokens||0)}</b></div>
+        <div class="total"><span>Total value</span><b>${fmtNum(total)} gems</b></div>
+        ${shinyHtml}
+      </div></div>
+    `;
+    card.addEventListener('click', (e)=>{
+      if(e.target.closest('[data-edit]')) return;
+      if(expandedIds.has(item.id)) expandedIds.delete(item.id); else expandedIds.add(item.id);
+      renderMain();
+    });
+    const pencilBtn = card.querySelector('[data-edit]');
+    if(pencilBtn){
+      pencilBtn.addEventListener('click', (e)=>{ e.stopPropagation(); openModal(item); });
+    }
+    grid.appendChild(card);
+  });
+  wrap.appendChild(grid);
+}
+function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+/* ============================= MODAL ============================= */
+const overlay = document.getElementById('overlay');
+const form = document.getElementById('itemForm');
+let statLines = [];
+
+function populateCatSelects(){
+  const catSel = document.getElementById('f_cat');
+  catSel.innerHTML = Object.entries(CATEGORIES).map(([k,c])=>`<option value="${k}">${c.label}</option>`).join('');
+  catSel.onchange = ()=>{ populateSubSelect(catSel.value); renderStatLines(); };
+}
+function populateSubSelect(catKey){
+  const subSel = document.getElementById('f_subcat');
+  const cat = CATEGORIES[catKey];
+  subSel.innerHTML = Object.entries(cat.subcats).map(([k,s])=>`<option value="${k}">${s.label}</option>`).join('');
+  document.getElementById('shinyBlock').style.display = catKey==='weapons' ? 'block' : 'none';
+}
+
+function statCap(){ return document.getElementById('f_cat').value==='cards' ? 3 : Infinity; }
+function renderStatLines(){
+  const wrap = document.getElementById('statLines');
+  wrap.innerHTML='';
+  statLines.forEach((s,idx)=>{
+    const line = document.createElement('div');
+    line.className='stat-line';
+    line.innerHTML = `
+      <input placeholder="Stat (e.g. Money)" value="${escapeHtml(s.label)}" data-idx="${idx}" data-f="label">
+      <input placeholder="e.g. x200" value="${escapeHtml(s.value)}" data-idx="${idx}" data-f="value">
+      <button type="button" class="icon-btn" data-remove="${idx}">✕</button>
+    `;
+    wrap.appendChild(line);
+  });
+  wrap.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const i=+e.target.dataset.idx, f=e.target.dataset.f;
+      statLines[i][f]=e.target.value;
+    });
+  });
+  wrap.querySelectorAll('[data-remove]').forEach(b=>{
+    b.addEventListener('click', ()=>{ statLines.splice(+b.dataset.remove,1); renderStatLines(); });
+  });
+  const cap = statCap();
+  const addBtn = document.getElementById('addStatBtn');
+  addBtn.disabled = statLines.length >= cap;
+  document.getElementById('statHint').textContent = isFinite(cap) ? `Cards can have up to ${cap} stats.` : '';
+}
+document.getElementById('addStatBtn').onclick = ()=>{
+  if(statLines.length >= statCap()) return;
+  statLines.push({label:'',value:''}); renderStatLines();
+};
+
+function openModal(item){
+  if(!unlocked) return;
+  editingId = item ? item.id : null;
+  document.getElementById('modalTitle').textContent = item ? 'Edit item' : 'Add item';
+  document.getElementById('deleteBtn').style.display = item ? 'inline-flex' : 'none';
+  populateCatSelects();
+
+  const cat = item ? item.category : currentCat;
+  document.getElementById('f_cat').value = cat;
+  populateSubSelect(cat);
+  document.getElementById('f_subcat').value = item ? item.subcat : (currentSubcat || Object.keys(CATEGORIES[cat].subcats)[0]);
+
+  document.getElementById('f_name').value = item ? item.name : '';
+  document.getElementById('f_tokens').value = item ? item.tokens : 0;
+  document.getElementById('f_shinyTokens').value = item ? (item.shinyTokens||0) : 0;
+
+  statLines = item && item.stats ? item.stats.map(s=>({...s})) : [];
+  renderStatLines();
+
+  overlay.classList.add('show');
+}
+function closeModal(){ overlay.classList.remove('show'); editingId=null; }
+document.getElementById('cancelBtn').onclick = closeModal;
+overlay.addEventListener('click', e=>{ if(e.target===overlay) closeModal(); });
+
+document.getElementById('deleteBtn').onclick = ()=>{
+  if(!editingId || !unlocked) return;
+  state.items = state.items.filter(i=>i.id!==editingId);
+  saveState(); closeModal(); renderAll();
+};
+
+form.addEventListener('submit', e=>{
+  e.preventDefault();
+  if(!unlocked) return;
+  const name = document.getElementById('f_name').value.trim();
+  if(!name) return;
+  const category = document.getElementById('f_cat').value;
+  const payload = {
+    id: editingId || ('item_'+Date.now()+Math.random().toString(36).slice(2,7)),
+    name,
+    category,
+    subcat: document.getElementById('f_subcat').value,
+    tokens: parseAbbrev(document.getElementById('f_tokens').value),
+    shinyTokens: category==='weapons' ? parseAbbrev(document.getElementById('f_shinyTokens').value) : 0,
+    stats: statLines.filter(s=>s.label.trim()!=='' || s.value.trim()!=='').slice(0, statCap())
+  };
+  if(editingId){
+    const i = state.items.findIndex(x=>x.id===editingId);
+    state.items[i] = payload;
+  }else{
+    state.items.push(payload);
+  }
+  saveState();
+  currentCat = payload.category; currentSubcat = payload.subcat;
+  closeModal(); renderAll();
+});
+
+document.getElementById('addItemBtn').onclick = ()=>openModal(null);
+
+/* ============================= TOKEN RATE ============================= */
+const rateInput = document.getElementById('tokenRateInput');
+function commitRate(){
+  if(!unlocked) return;
+  const val = parseAbbrev(rateInput.value);
+  state.tokenRate = val>0?val:state.tokenRate;
+  rateInput.value = fmtNum(state.tokenRate);
+  document.getElementById('rateEcho').textContent = '= ' + Math.round(state.tokenRate).toLocaleString();
+  saveState();
+  renderMain();
+}
+rateInput.addEventListener('change', commitRate);
+rateInput.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); rateInput.blur(); }});
+
+/* ============================= SEARCH ============================= */
+document.getElementById('searchInput').addEventListener('input', renderMain);
+
+/* ============================= MOBILE MENU ============================= */
+const menuBtn = document.getElementById('menuBtn');
+const sidebarEl = document.getElementById('sidebar');
+function checkMobile(){ menuBtn.style.display = window.innerWidth<=760 ? 'flex':'none'; }
+menuBtn.addEventListener('click', ()=>sidebarEl.classList.toggle('open'));
+window.addEventListener('resize', checkMobile);
+checkMobile();
+
+/* ============================= INIT ============================= */
+function renderAll(){
+  rateInput.value = fmtNum(state.tokenRate);
+  document.getElementById('rateEcho').textContent = '= ' + Math.round(state.tokenRate).toLocaleString();
+  renderSidebar();
+  renderMain();
+}
+loadState();
+</script>
+</body>
+</html>
